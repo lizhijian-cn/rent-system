@@ -15,6 +15,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.core.env.Environment;
 
 import javax.annotation.PostConstruct;
+
+import java.beans.Customizer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -58,6 +60,7 @@ public class RentApp {
      * @param args the command line arguments.
      */
     public static void main(String[] args) {
+        System.getProperties().put( "server.port", 8181 );
         SpringApplication app = new SpringApplication(RentApp.class);
         DefaultProfileUtil.addDefaultProfile(app);
         Environment env = app.run(args).getEnvironment();
