@@ -3,7 +3,6 @@ import { Message } from 'element-ui';
 import router from '../router'
 
 axios.interceptors.response.use(success => {
-  console.log(success)
   if (success.status && success.status == 200 && success.data.status == 500) {
     Message.error({ message: success.data.message })
     return;
@@ -13,7 +12,6 @@ axios.interceptors.response.use(success => {
   }
   return success.data;
 }, error => {
-  console.log(error)
   if (error.response.status == 600) {
     Message.error({ message: '自定义错误' })
   }
@@ -25,8 +23,8 @@ axios.interceptors.response.use(success => {
     Message.error({ message: '尚未登录，请登录' })
     router.replace('/');
   } else {
-    if (error.response.data.message) {
-      Message.error({ message: error.response.data.message })
+    if (error.response.message) {
+      Message.error({ message: error.response.message })
     } else {
       Message.error({ message: '未知错误!' })
     }

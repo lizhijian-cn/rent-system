@@ -56,7 +56,6 @@
       },
       _getJsonData() {
         this.getRequest('@/../public/china_address_v4.json').then((res) => {
-          if (!res) console.log('error')
           this.provinceList = []
           this.cityList = []
           res.data.forEach((item) => {

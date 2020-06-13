@@ -48,7 +48,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="租金" min-width="100px" align="center">
+      <el-table-column label="租金/天" min-width="100px" align="center">
         <template slot-scope="{row}">
           <span>￥{{ row.rent }}</span>
         </template>
@@ -56,7 +56,7 @@
 
       <el-table-column label="附加服务" min-width="180px" align="center">
         <template slot-scope="{row}">
-          <el-tag v-for="item in row.checkList">{{ hash.checkList[item] }}</el-tag>
+          <el-tag v-for="item in row.checkList" :key="item">{{ hash.checkList[item] }}</el-tag>
         </template>
       </el-table-column>
 
@@ -81,7 +81,7 @@
             编辑
           </el-button>
           <el-button size="mini" type="danger" @click="handleDelete(row,$index)">
-            Delete
+            删除
           </el-button>
         </template>
       </el-table-column>
@@ -90,7 +90,7 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="roomFormVisible">
-      <el-form class="form-container" ref="roomForm" :rules="roomRules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+      <el-form class="form-container" ref="roomForm" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         
         <el-form-item label="房间号" prop="roomNumber">
           <el-input v-model="temp.roomNumber" placeholder="请输入"/>
@@ -119,7 +119,7 @@
         </el-form-item>
 
         <el-form-item label="需要维修">
-          <el-switch v-model="temp.required"/>
+          <el-switch v-model="temp.repaired"/>
           </el-switch>
         </el-form-item>
       </el-form>
@@ -134,7 +134,7 @@
     </el-dialog>
 
     <el-dialog title="申请租赁" :visible.sync="applyFormVisible">
-      <el-form class="form-container" ref="applyForm" :rules="applyRules" v-model="applyTemp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+      <el-form class="form-container" ref="applyForm" v-model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         
         <el-form-item label="用户名">
           <el-input v-model="username" placeholder="请输入用户名"/>
@@ -145,41 +145,38 @@
         </el-form-item>
 
         <el-form-item label="租赁方式">
-          <el-radio v-model="shortRent" :label="true">短租</el-radio>
-          <el-radio v-model="shortRent" :label="false">长租</el-radio>
+          <el-radio v-model="temp.rentType" label="shortRent">短租</el-radio>
+          <el-radio v-model="temp.rentType" label="longRent">长租</el-radio>
         </el-form-item>
 
-        <div v-if="shortRent">
-          <el-form-item label="租房时长: ">
-            <el-input v-model="applyTemp.shortRentForm.day" placeholder="请选择天数"/>
-          </el-form-item>
+        <el-form-item label="起始日期">
           <el-date-picker
-            v-model="applyTemp.shortRentForm.startDay"
+            v-model="temp.startDay"
             type="date"
             placeholder="选择起始日期"
             :picker-options="pickerOptions"
           />
-          <el-form-item label="价格">
-            <span>￥{{ curRoom.rent * applyTemp.shortRentForm.day }}</span>
+        </el-form-item>
+
+        <div v-if="temp.rentType=== 'shortRent'">
+          <el-form-item label="租房时长: ">
+            <el-input v-model="temp.time" placeholder="请输入天数"/>
+          </el-form-item>
+          <el-form-item label="总价: ">
+            <span>￥{{ cost }}</span>
           </el-form-item>
         </div>
         <div v-else>
           <el-form-item label="租房时长: ">
-            <el-input v-model="applyTemp.longRentForm.month" placeholder="请选择月数"/>
+            <el-input v-model="temp.time" placeholder="请选择月数"/>
           </el-form-item>
-          <el-date-picker
-            v-model="applyTemp.longRentForm.startMonth"
-            type="month"
-            placeholder="选择起始月份"
-            :picker-options="pickerOptions"
-          />
-          <el-form-item label="价格">
-            <span>￥{{ curRoom.rent * 20 * applyTemp.longRentForm.month }}</span>
+          <el-form-item label="每个月房租: ">
+            <span>￥{{ cost }}</span>
           </el-form-item>
         </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="roomFormVisible = false">
+        <el-button @click="applyFormVisible = false">
           取消
         </el-button>
         <el-button type="primary" @click="createApply()">
@@ -199,8 +196,17 @@ export default {
   components: { Pagination },
   // directives: { waves },
   computed: {
+    userId() {
+      return sessionStorage.getItem('userId')
+    },
     username() {
       return sessionStorage.getItem('username')
+    },
+    cost() {
+      if (!this.temp || !this.curRoom) return 0
+      if (this.temp.rentType === 'shortRent') return this.curRoom.rent * this.temp.time 
+      if (this.temp.rentType === 'longRent') return this.curRoom.rent * 20
+      return 0
     }
   },
   data() {
@@ -261,62 +267,33 @@ export default {
           value: 2,
           label: '维修中'
         }],
-      temp: {
-        id: '',
-        roomNumber: '',
-        type: '',
-        rent: '',
-        checkList: [],
-        lived: '',
-        required: false,
-        status: ''
-      },
+      temp: '',
       roomFormVisible: false,
       dialogStatus: '',
       textMap: {
         update: 'Edit',
         create: 'Create'
       },
-      roomRules: {
-        // type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        // timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        // title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-      },
       downloadLoading: false,
 
       applyFormVisible: false,
-      shortRent: true,
       curRoom: '',
-      applyRules: {
-
-      },
-      applyTemp: {
-        shortRentForm: {
-          day: '',
-          startDay: ''
-        },
-        longRentForm: {
-          month: '',
-          startMonth: ''
-        }
-      },
       pickerOptions: {
-          disabledDate(time) {
-            return time.getTime() < Date.now()
-          }
+        disabledDate(time) {
+          return time.getTime() < Date.now()
         }
+      }
     }
   },
   created() {
-    // this.listQuery.checkList = []
     this.getList()
   },
   methods: {
     getList() {
       this.listLoading = true
       this.getRequest('/room/list', this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
+        this.list = response.items
+        this.total = response.total
 
         // Just to simulate the time of the request
         setTimeout(() => {
@@ -342,20 +319,19 @@ export default {
       }
       this.handleFilter()
     },
-    resetTemp() {
+    resetRoomTemp() {
       this.temp = {
         id: '',
         roomNumber: '1001',
         type: 1,
-        rent: 1000,
+        rent: 10,
         checkList: [0],
         lived: 0,
-        required: false,
-        status: ''
+        repaired: false
       }
     },
     handleCreate() {
-      this.resetTemp()
+      this.resetRoomTemp()
       this.dialogStatus = 'create'
       this.roomFormVisible = true
       this.$nextTick(() => {
@@ -365,10 +341,9 @@ export default {
     createData() {
       this.$refs['roomForm'].validate((valid) => {
         if (valid) {
-          // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.postRequest('/room/update', this.temp).then(() => {
-            this.list.unshift(this.temp)
+          this.postRequest('/room/add', this.temp).then(() => {
             this.roomFormVisible = false
+            this.handleFilter()
             this.$notify({
               title: 'Success',
               message: 'Created Successfully',
@@ -390,11 +365,9 @@ export default {
     updateData() {
       this.$refs['roomForm'].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          this.postRequest('/room/update', tempData).then(() => {
-            const index = this.list.findIndex(v => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
+          this.postRequest('/room/update', this.temp).then(() => {
             this.roomFormVisible = false
+            this.handleFilter()
             this.$notify({
               title: 'Success',
               message: 'Update Successfully',
@@ -406,24 +379,24 @@ export default {
       })
     },
     handleDelete(row, index) {
-      this.$notify({
-        title: 'Success',
-        message: 'Delete Successfully',
-        type: 'success',
-        duration: 2000
+      this.postRequest('/room/remove', { id: row.id }).then(() => {
+        this.handleFilter()
+        this.$notify({
+          title: 'Success',
+          message: 'Delete Successfully',
+          type: 'success',
+          duration: 2000
+        })
+        
       })
-      this.list.splice(index, 1)
     },
     resetApplyTemp() {
-      this.applyTemp = {
-        shortRentForm: {
-          day: '',
-          startDay: ''
-        },
-        longRentForm: {
-          month: '',
-          startMonth: ''
-        }
+      this.temp = {
+        userId: this.userId,
+        rentType: 'shortRent',
+        time: 0,
+        startDay: '',
+        cost: this.cost
       }
     },
     handleApply(row) {
@@ -435,7 +408,7 @@ export default {
       })
     },
     createApply() {
-
+      this.postRequest('/apply/add', this.temp)
     },
     getSortClass: function(key) {
       const sort = this.listQuery.sort

@@ -4,21 +4,24 @@ import Mock from 'mockjs'
 
 const mock = new MockAdapter(axios)
 const Random = Mock.Random
-Random.increment()
-
-mock.onPost('/account/login').reply(config => {
-    const body = JSON.parse(config.data)
-    if (body.username === 'zhijian' && body.password === '123456') {
-        const data = {
-            username: body.username,
-            role: 'ROLE_TENANT'
-        }
-        return [200, data]
-    }
-    return [600, {}]
-})
-
 const data = Mock.mock({
+    'user': [{
+        'id': '0',
+        'username': 'zhijian',
+        'password': '123456',
+        'role': 'ROLE_TENANT',
+        'email': '13261806700@163.com',
+        'activated': true,
+        'name': '菜菜鸡',
+        'address': '这是一串地址',
+        'telephone': '13261806700',
+        'balance': 1000
+    }, {
+        'id': '1',
+        'username': 'staff',
+        'password': '123456',
+        'role': 'ROLE_STAFF',       
+    }],
     'room|5': [{
         id: '@increment()',
         roomNumber: '@increment(100)',
@@ -28,8 +31,36 @@ const data = Mock.mock({
         'checkList': [],
         'status': 0,
         repaired: '@boolean()'
-    }]
+    }],
+    'apply|5': [{
+        'id': '',
+        'userId': '',
+        'roomid': '',
+        'username': 'zhijian',
+        'roomNumber': '@integer(100, 400)',
+        'rentType|1': ['shortRent', 'longRent'],
+        startDay: '@date()',
+        time: '@integer(1, 5)',
+        livedTime: '',
+        passed: '@boolean()',
+        payed: '@boolean()', 
+        cost: '@integer(500, 2000)',// 短租：总，长租：每月租金
+    }],
+    'ticket': []
 })
+
+mock.onPost('/account/login').reply(config => {
+    const body = JSON.parse(config.data)
+    const index = data.user.findIndex(v => v.username === body.username && v.password === body.password)
+    
+    if (index != -1) return [200, data.user[index]]
+    else return [600, { msg: '用户名或密码错误' }]
+})
+mock.onGet('/user').reply(config => {
+    const params = config.params
+    return [200, data.user[params.id]]
+})
+
 const computeStatus = item => {
     item.status = item.repaired ? 2 :
                   item.lived < item.type ? 0 : 1    
@@ -53,31 +84,59 @@ mock.onGet('/room/list').reply(config => {
     })
     const pageList = mockList.filter((item, index) => index < limit * page && index >= limit * (page - 1))
 
-    return [200, { data: { total: mockList.length, items: pageList }}]
+    return [200, { total: mockList.length, items: pageList }]
 })
 
 mock.onPost('/room/update').reply(config => {
     const query = JSON.parse(config.data)
-    console.log(query.id, query.status)
     computeStatus(query)
-    console.log(query.id, query.status)
     const index = data.room.findIndex(v => v.id === query.id)
-    console.log(index)
-    if (index !== -1) {
-        data.room[index] = query
-    } else {
-        query.id = Random.increment()
-        data.room.unshift(query)
-    }
-    console.log(query.id, query.status)
+    data.room[index] = query
+
     return [200, {}]
 })
-mock.onGet('/housing').reply(config => {
-    const params = config.params
-    return [200, { data: data.housing[params.id] }]
+mock.onPost('/room/add').reply(config => {
+    const query = JSON.parse(config.data)
+    computeStatus(query)
+    query.id = Random.increment()
+    data.room.push(query)
+    return [200, {}]
+})
+mock.onPost('/room/remove').reply(config => {
+    const query = JSON.parse(config.data)
+    const index = data.room.findIndex(v => v.id === query.id)
+    data.room.splice(index, 1)
+    return [200, {}]
 })
 
-mock.onGet('/housings').reply(config => {
+mock.onGet('/apply/list').reply(config => {
+    return [200, {
+        items: data.apply,
+        total: data.apply.length
+    }]
+})
+mock.onPost('/ticket/add').reply(config => {
+    const query = JSON.parse(config.data)
+    query.id = Random.increment()
+    const index = data.user.findIndex(v => v.id === query.userId)
+    query.username = data.user[index].username
+    query.replied = false
+    query.reply = ''
+    data.ticket.push(query)
+    return [200, {}]
+})
+
+mock.onGet('/ticket/list').reply(config => {
+    return [200, {
+        items: data.ticket,
+        total: data.ticket.length
+    }]
+})
+
+mock.onGet('/ticket/details').reply(config => {
     const params = config.params
-    return [200, { data: data.housing }]
+    console.log(params)
+    const index = data.ticket.findIndex(v => v.id === params.id)
+    console.log(data.ticket[index])
+    return [200, data.ticket[index]]
 })

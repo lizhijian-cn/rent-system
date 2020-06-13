@@ -4,20 +4,13 @@
       <el-button class="no-b" :icon="iconName" @click="toggleMenuOpen"></el-button>
     </el-col>
     <el-col :span="2" :offset="20" class="header-wrap text-r">
-      <el-dropdown>
+      <el-dropdown @command="handleCommand">
         <el-button class="no-b">
           <i class="fa fa-user-circle" aria-hidden="true"></i> <i class="el-icon-arrow-down el-icon--right"></i>
         </el-button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item>
-            <i class="fa fa-address-card-o"></i>
-            查看个人信息</el-dropdown-item>
-          <el-dropdown-item>
-            <i class="fa fa-power-off"></i>
-            登出</el-dropdown-item>
-          <el-dropdown-item>
-            <i class="fa fa-wrench"></i>
-            修改密码</el-dropdown-item>
+          <el-dropdown-item command="userinfo"><i class="fa fa-address-card-o"></i>查看个人信息</el-dropdown-item>
+          <el-dropdown-item command="logout"><i class="fa fa-power-off"></i>登出</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </el-col>
@@ -40,6 +33,15 @@
       },
       toggleMenuOpen() {
         this.$store.commit('toggleMenuOpen')
+      },
+      handleCommand(command) {
+        console.log(command)
+        if (command === 'userinfo') {
+          this.$router.push('/userinfo')
+        } else if (command === 'logout') {
+          sessionStorage.clear()
+          this.$router.push('/login')
+        }
       }
     },
     computed: {

@@ -38,8 +38,6 @@ router.beforeEach((to, from, next) => {
   } else {
     if (username) {
       addDynamicRoutes(role)
-      console.log('@/router/')
-      // fresh = true
       next(to)
   
     } else {

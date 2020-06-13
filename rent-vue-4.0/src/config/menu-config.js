@@ -2,7 +2,21 @@ const base = 'home'
 
 const tenantMenu = [
   {
-    name: 'housing',
+    name: 'public',
+    meta: {
+
+    },
+    sub: [
+      {
+        index: '/userinfo',
+        component: () => import('@/views/Userinfo'),
+        hidden: true
+      }
+    ],
+    hidden: true
+  },
+  {
+    name: 'room',
     meta: {
       title: '房间',
       icon: 'fa fa-camera-retro'
@@ -13,6 +27,16 @@ const tenantMenu = [
         component: () => import('@/views/rms/Room'),
         meta: {
           title: '房间列表',
+          icon: 'fa fa-camera-retro',
+          type: 'menu',
+          active: false
+        }
+      },
+      {
+        index: '/rms/apply/list',
+        component: () => import('@/views/rms/Apply'),
+        meta: {
+          title: '我的申请',
           icon: 'fa fa-camera-retro',
           type: 'menu',
           active: false
@@ -29,7 +53,7 @@ const tenantMenu = [
     sub: [
       {
         index: '/tms/addTicket',
-        component: () => import('@/views/tms/Ticket'),
+        component: () => import('@/views/tms/AddTicket'),
         meta: {
           title: '提交工单',
           icon: 'fa fa-camera-retro',
@@ -38,13 +62,18 @@ const tenantMenu = [
         }
       },
       {
-        index: '/tms/list',
+        index: '/tms/ticket',
+        component: () => import('@/views/tms/Ticket'),
         meta: {
-          // index: `/Home/BasicContainer`,
           title: '我的工单',
           type: 'menu',
           active: false
         }
+      },
+      {
+        index: '/tms/ticketDetails',
+        component: () => import('@/views/tms/TicketDetails'),
+        hidden: true
       }]
   }]
 
