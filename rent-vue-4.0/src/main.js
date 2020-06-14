@@ -8,7 +8,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import { postRequest, postKeyValueRequest, putRequest, deleteRequest, getRequest } from "@/utils/api";
-require('@/mock/mock.js')
+// require('@/mock/mock.js')
+require('@/mock/mock-server')
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)

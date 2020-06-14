@@ -37,7 +37,12 @@
       handleCommand(command) {
         console.log(command)
         if (command === 'userinfo') {
-          this.$router.push('/userinfo')
+          this.$router.push({
+            path: '/userinfo',
+            query: {
+              id: parseInt(sessionStorage.getItem('userId'))
+            }
+          })
         } else if (command === 'logout') {
           sessionStorage.clear()
           this.$router.push('/login')

@@ -1,67 +1,75 @@
 <template>
   <div class="app-container">
     <el-table
-    :key="tableKey"
-    v-loading="listLoading"
-    :data="list"
-    border
-    fit
-    highlight-current-row
-    style="width: 100%;"
-    @sort-change="sortChange"
-  >
+      :key="tableKey"
+      v-loading="listLoading"
+      :data="list"
+      border
+      fit
+      highlight-current-row
+      style="width: 100%;"
+      @sort-change="sortChange"
+    >
+      <el-table-column label="类型" min-width="80px" align="center">
+        <template slot-scope="{row}">
+          <el-tag v-if="row.applyRepaire">申请维修</el-tag>
+          <el-tag v-else>投诉</el-tag>
+        </template>
+      </el-table-column>
+      
+      <el-table-column label="提交者" min-width="80px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.username }}</span>
+        </template>
+      </el-table-column>
 
-    <el-table-column label="类型" min-width="80px" align="center">
-      <template slot-scope="{row}">
-        <el-tag v-if="row.applyRepaire">申请维修</el-tag>
-        <el-tag v-else>投诉</el-tag>
-      </template>
-    </el-table-column>
-    
-    <el-table-column label="提交者" min-width="80px" align="center">
-      <template slot-scope="{row}">
-        <span>{{ row.username }}</span>
-      </template>
-    </el-table-column>
+      <el-table-column label="标题" min-width="80px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.title }}</span>
+        </template>
+      </el-table-column>
 
-    <el-table-column label="标题" min-width="80px" align="center">
-      <template slot-scope="{row}">
-        <span>{{ row.title }}</span>
-      </template>
-    </el-table-column>
-
-    <el-table-column label="状态" min-width="80px" align="center">
-      <template slot-scope="{row}">
-        <el-tag v-if="row.replied">已回复</el-tag>
-        <el-tag v-else>未回复</el-tag>
-      </template>
-    </el-table-column>
-    
-    <el-table-column label="操作" align="center" width="300">
-      <template slot-scope="{row,$index}">
-        <el-button type="primary" size="mini" @click="handleDetails(row)">
-          查看详情
-        </el-button>
-      </template>
-    </el-table-column>
-  </el-table>
+      <el-table-column label="状态" min-width="80px" align="center">
+        <template slot-scope="{row}">
+          <el-tag v-if="row.replied">已回复</el-tag>
+          <el-tag v-else>未回复</el-tag>
+        </template>
+      </el-table-column>
+      
+      <el-table-column label="操作" align="center" width="300">
+        <template slot-scope="{row,$index}">
+          <el-button type="primary" size="mini" @click="handleDetails(row)">
+            查看详情
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
   </div>
 </template>
 
 <script>
+  import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+
   export default {
+    components: { Pagination },
     data() {
       return {
+        tenant: sessionStorage.getItem('role') === 'ROLE_TENANT',
         tableKey: 0,
-        listLoading: false,
-        list: [],
+        list: null,
         total: 0,
+        listLoading: true,
+        listQuery: {
+          page: 1,
+          limit: 20
+        },
       }
     },
     methods: {
       getList() {
         this.listLoading = true
-        this.getRequest('/ticket/list').then(resp => {
+        this.getRequest('/ticket/list', {}).then(resp => {
           this.list = resp.items
           this.total = resp.total
           setTimeout(() => {

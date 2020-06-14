@@ -29,9 +29,6 @@ export default {
   computed: {
     ...mapGetters(['navTagIndexs']),
     ...mapState(['isNavMenuOpen'])
-  },
-  created() {
-    console.log(menu)
   }
 }
 </script>

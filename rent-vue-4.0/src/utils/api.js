@@ -2,18 +2,30 @@ import axios from 'axios'
 import { Message } from 'element-ui';
 import router from '../router'
 
-axios.interceptors.response.use(success => {
-  if (success.status && success.status == 200 && success.data.status == 500) {
-    Message.error({ message: success.data.message })
-    return;
+axios.interceptors.request.use(success => {
+  if (sessionStorage.getItem('role') === 'ROLE_TENANT') {
+    const userId = parseInt(sessionStorage.getItem('userId'))
+    if (success.method === 'get') {
+      success.params.userId = userId
+    } else {
+      success.data.userId = userId
+    }
   }
+  console.log('request interceptor success', success)
+  return success
+}, error => {
+  return error
+})
+axios.interceptors.response.use(success => {
   if (success.data.message) {
     Message.success({ message: success.data.message })
   }
   return success.data;
 }, error => {
+  console.log('response interceptors error', error.response)
   if (error.response.status == 600) {
-    Message.error({ message: '自定义错误' })
+    const message = error.response.data.message || '自定义错误'
+    Message.error({ message })
   }
   else if (error.response.status == 504 || error.response.status == 404) {
     Message.error({ message: '服务器被吃了( ╯□╰ )' })
@@ -29,7 +41,7 @@ axios.interceptors.response.use(success => {
       Message.error({ message: '未知错误!' })
     }
   }
-  return;
+  return Promise.reject(error)
 })
 
 let base = '';

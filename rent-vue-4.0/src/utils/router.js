@@ -27,6 +27,7 @@ export const addDynamicRoutes = (role) => {
     })
     router.addRoutes([{
         path: '/',
+        redirect: '/home',
         component: Layout,
         children: LayoutChildren
     }])

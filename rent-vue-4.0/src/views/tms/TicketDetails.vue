@@ -12,6 +12,11 @@
 
 <script>
   export default {
+    computed: {
+      id() {
+        return JSON.parse(sessionStorage.getItem('UserinfoqueryId'))
+      }
+    },
     data() {
       return {
         ticket: ''
@@ -19,12 +24,13 @@
     },
     methods: {
       getTicket() {
-        this.getRequest('/ticket/details', {id: this.$route.query.id }).then(resp => {
+        this.getRequest('/ticket', {id: this.id }).then(resp => {
           this.ticket = resp
         })
       }
     },
     created() {
+      sessionStorage.setItem('UserinfoqueryId', this.$route.query.id)
       this.getTicket()
     }
   }
