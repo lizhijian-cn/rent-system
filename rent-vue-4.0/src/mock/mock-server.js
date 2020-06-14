@@ -17,7 +17,7 @@ const users = [
         password: '000000',
         role: 'ROLE_TENANT',
         email: '13261806700@163.com',
-        activated: false,
+        activated: true,
         name: '菜菜鸡',
         address: '北京市海淀区学院路37号北京航空航天大学学院路校区',
         telephone: '13261806700',
@@ -146,7 +146,7 @@ const applies = [
         rentType: 'longRent',
         startDay: Date.now(),
         time: 2,
-        passed: false,
+        passed: true,
         payed: false,
         cost: ''
     },
@@ -267,7 +267,8 @@ mock.onPost('/user/balance/update').reply(config => {
     const index = users.findIndex(x => x.id === id && x.password === password)
     if (index === -1)
         return error('密码错误')
-    users[index].balance += cost
+    const balance = users[index].balance
+    users[index].balance = JSON.parse(balance) + JSON.parse(cost)
     return success()
 })
 
@@ -287,17 +288,20 @@ mock.onPost('/user/update').reply(config => {
 })
 mock.onGet('/user').reply(config => {
     const { id } = config.params
+    
     const index = users.findIndex(x => x.id === id)
+    console.log(users[index])
     return success(users[index])
 })
 mock.onPost('/user/email/active').reply(config => {
     return error('todo')
 })
 
-mock.onGet('/user/tenant/list').reply(config => {
+mock.onGet('/user/list').reply(config => {
     const { page = 1, limit = 20, sort } = config.params
     
-    const mockList = users.filter(x => x.role === 'ROLE_TENANT')
+    const mockList = users
+    // const mockList = users.filter(x => x.role === 'ROLE_TENANT')
     const pageList = mockList.filter((x, index) => index < limit * page && index >= limit * (page - 1))
 
     return success({
@@ -346,6 +350,7 @@ mock.onPost('/room/remove').reply(config => {
 
 mock.onGet('/room/list').reply(config => {
     const { type, status, checkList, minRent, maxRent, page = 1, limit = 20, sort } = config.params
+    console.log(rooms)
     const mockList = rooms.filter(x => {
         if (type && x.type !== +type) return false
         if (checkList && !checkList.every(v => x.checkList.includes(v))) return false
@@ -378,9 +383,9 @@ mock.onPost('/apply/add').reply(config => {
 
     const roomIndex = rooms.findIndex(x => x.id === roomId)
     const room = rooms[roomIndex]
-    if (room.status === 2)
+    if (room.status === 3)
         return error('该房屋正在维修中，无法出租')
-    if (room.status == 1) 
+    if (room.status === 2) 
         return error('该房间已满')
     room.lived++
     handleRoom(room)

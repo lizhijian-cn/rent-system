@@ -3,7 +3,13 @@ import Router from 'vue-router'
 import { addDynamicRoutes } from '@/utils/router'
 import { menu } from '@/config/menu-config'
 
+const originalPush = Router.prototype.push
+Router.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}
+
 Vue.use(Router)
+
 
 const routes = [
   {

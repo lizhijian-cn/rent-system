@@ -115,7 +115,6 @@ export default {
       })
     },
     pay(row) {
-      console.log(row.cost)
       this.postRequest('/apply/pay', { id: row.id, cost: row.cost }).then(resp => {
         this.getList()
         this.$notify({

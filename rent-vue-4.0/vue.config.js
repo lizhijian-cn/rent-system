@@ -17,7 +17,7 @@ module.exports = {
   //     }
   //   }
   // },
-
+  
   configureWebpack: {
     name: name,
     resolve: {

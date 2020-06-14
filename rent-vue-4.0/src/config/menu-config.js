@@ -62,10 +62,10 @@ const tenantMenu = [
         hidden: true
       },
       {
-        index: '/userinfo',
-        component: () => import('@/views/Userinfo'),
+        index: '/ums/userinfo',
+        component: () => import('@/views/ums/Userinfo'),
         hidden: true
-      }
+      },
     ]
   }
 ]
@@ -113,9 +113,18 @@ const staffMenu = [
         hidden: true
       },
       {
-        index: '/userinfo',
-        component: () => import('@/views/Userinfo'),
+        index: '/ums/userinfo',
+        component: () => import('@/views/ums/Userinfo'),
         hidden: true
+      },
+      {
+        index: '/ums/user',
+        component: () => import('@/views/ums/User'),
+        meta: {
+          title: '管理用户',
+          type: 'menu',
+          active: false
+        }
       }
     ]
   }

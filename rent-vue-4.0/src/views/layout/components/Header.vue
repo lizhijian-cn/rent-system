@@ -38,7 +38,7 @@
         console.log(command)
         if (command === 'userinfo') {
           this.$router.push({
-            path: '/userinfo',
+            path: '/ums/userinfo',
             query: {
               id: parseInt(sessionStorage.getItem('userId'))
             }

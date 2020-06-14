@@ -5,8 +5,14 @@
     <aside v-html="ticket.content"/>
     <el-divider/>
     <h3 style="margin-top: 50px;">回复</h3>
-    <aside v-if="ticket.replied">{{ ticket.reply }}</aside>
-    <aside v-else>暂无回复</aside>
+    <div v-if="tenant">
+      <aside v-if="ticket.replied">{{ ticket.reply }}</aside>
+      <aside v-else>暂无回复</aside>
+    </div>
+    <div v-else>
+      <aside v-if="ticket.replied">{{ ticket.reply }}</aside>
+      <el-input></el-input>
+    </div>
   </div>
 </template>
 
@@ -19,6 +25,7 @@
     },
     data() {
       return {
+        tenant: sessionStorage.getItem('role') === 'ROLE_TENANT',
         ticket: ''
       }
     },

@@ -1,21 +1,21 @@
 <template>
   <div class="app-container">
-    <!-- <h2>{{ info.role === 'ROLE_TENANT' ? '租客' : '客服' }}信息</h2> -->
-    <h2>租客信息</h2>
+    <h2>{{ info.role === 'ROLE_TENANT' ? '租客' : '客服' }}信息</h2>
+    <!-- <h2>租客信息</h2> -->
     <el-divider/>
       <el-row type="flex" justify="space-around">
         <el-col :span="8">  
           <el-card style="background: #f5f5f7;">
             <div slot="header">
               <span>个人信息</span>
-              <el-button style="float: right; padding: 3px;" type="text" @click="handleChangePassword">修改密码</el-button>
-              <el-button style="float: right; padding: 3px;" type="text" @click="handleTopUp">充值</el-button>
+              <el-button v-if="info.role === 'ROLE_TENANT'" style="float: right; padding: 3px;" type="text" @click="handleChangePassword">修改密码</el-button>
+              <el-button v-if="info.role === 'ROLE_TENANT'" style="float: right; padding: 3px;" type="text" @click="handleTopUp">充值</el-button>
             </div>
             <el-form class="form-container" label-position="left" label-width="60px" style="margin-left:10px;">
               <el-form-item label="用户名">
                 <span>{{ info.username }}</span>
               </el-form-item>
-              <el-form-item class="filter-container" label="余额">
+              <el-form-item v-if="info.role === 'ROLE_TENANT'"class="filter-container" label="余额">
                 <span>￥{{ info.balance }}</span>
               </el-form-item>
               <el-form-item class="filter-container" label="邮箱">
